@@ -17,6 +17,7 @@ using Microsoft.OpenApi.Models;
 using SkinetAPI.Extensions;
 using SkinetAPI.Helpers;
 using SkinetAPI.Middleware;
+using StackExchange.Redis;
 
 namespace SkinetAPI
 {
@@ -38,6 +39,11 @@ namespace SkinetAPI
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
             services.AddApplicationServices();
+            services.AddSingleton<IConnectionMultiplexer>(c => {
+                var configuration = ConfigurationOptions.Parse(_config
+                    .GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(configuration);
+            });
             services.AddSwaggerDocumentation();
             services.AddCors(opt =>
             {
